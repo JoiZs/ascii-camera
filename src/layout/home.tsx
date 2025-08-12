@@ -2,6 +2,8 @@ import { useContext, useEffect } from "react";
 import { MInpCtx } from "../provider";
 import { useStore } from "zustand";
 import Nav from "../components/nav";
+import Display from "../components/display";
+import Footer from "../components/footer";
 
 const Home = () => {
   const store = useContext(MInpCtx);
@@ -16,13 +18,16 @@ const Home = () => {
         )
       );
     };
-    updateDevice();
 
+    updateDevice();
     return;
   }, []);
+
   return (
-    <div className="w-full h-full max-w-lg m-auto font-mono">
+    <div className="w-full h-screen max-w-lg m-auto font-mono grid grid-rows-8">
       <Nav />
+      <Display />
+      <Footer />
     </div>
   );
 };
