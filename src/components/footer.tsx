@@ -12,19 +12,24 @@ const Footer = () => {
 
   const updateConfigHandler = (
     e: ChangeEvent<HTMLInputElement>,
-    type: 0 | 1 | 2
+    type: 0 | 1 | 2 | 3 | 4 | 5
   ) => {
     const currVal = e.target.value;
 
     if (type == 0) {
-      console.log("bg1");
       debounce(() => {
         updateConfig({ background: currVal });
       }, 300)();
     } else if (type == 1) {
       debounce(() => updateConfig({ foreground: currVal }), 1000)();
-    } else {
+    } else if (type == 2) {
       debounce(() => updateConfig({ size: parseInt(currVal) }), 1000)();
+    } else if (type == 3) {
+      debounce(() => updateConfig({ is_grayscale: e.target.checked }), 1000)();
+    } else if (type == 4) {
+      debounce(() => updateConfig({ is_short: e.target.checked }), 1000)();
+    } else if (type == 5) {
+      debounce(() => updateConfig({ is_invert: e.target.checked }), 1000)();
     }
   };
 
@@ -55,6 +60,30 @@ const Footer = () => {
           step={2}
           min={2}
           max={32}
+        ></input>
+      </div>
+      <div className="flex items-center gap-2">
+        <label>GrayScale:</label>
+        <input
+          onChange={(e) => updateConfigHandler(e, 3)}
+          type="checkbox"
+          defaultChecked={currConfig.is_grayscale}
+        ></input>
+      </div>
+      <div className="flex items-center gap-2">
+        <label>Short Characters:</label>
+        <input
+          onChange={(e) => updateConfigHandler(e, 4)}
+          type="checkbox"
+          defaultChecked={currConfig.is_short}
+        ></input>
+      </div>
+      <div className="flex items-center gap-2">
+        <label>Invert: </label>
+        <input
+          onChange={(e) => updateConfigHandler(e, 5)}
+          type="checkbox"
+          defaultChecked={currConfig.is_invert}
         ></input>
       </div>
     </div>

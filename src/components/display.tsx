@@ -15,13 +15,20 @@ const Display = () => {
   const config = useStore(store, (s) => s.config);
 
   useEffect(() => {
-    function draw(canvasCtx: CanvasRenderingContext2D) {
+    function draw() {
       const canvas = canvasRef.current;
       const video = vdoRef.current;
+
       if (!canvas || !video || video.readyState !== video.HAVE_ENOUGH_DATA) {
-        animationFrameId.current = requestAnimationFrame(() => draw(canvasCtx));
+        animationFrameId.current = requestAnimationFrame(draw);
         return;
       }
+
+      const canvasCtx = canvasRef.current?.getContext("2d", {
+        willReadFrequently: true,
+      });
+
+      if (!canvasCtx) return;
 
       const width = canvas.width;
       const height = canvas.height;
@@ -32,8 +39,10 @@ const Display = () => {
 
       canvasCtx.clearRect(0, 0, width, height);
 
-      const asciiChars =
-        ' .`^",:;Il!i~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+      const asciiChars = config.is_short
+        ? " .:-=+*#%@"
+        : ' .`^",:;Il!i~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+
       const asciiLen = asciiChars.length - 1;
 
       const fontSize = config.size;
@@ -53,13 +62,21 @@ const Display = () => {
           const py = Math.floor(row * yRatio);
           const offset = (py * imgData.width + px) * 4;
 
-          const r = imgData.data[offset];
-          const g = imgData.data[offset + 1];
-          const b = imgData.data[offset + 2];
+          let r = imgData.data[offset];
+          let g = imgData.data[offset + 1];
+          let b = imgData.data[offset + 2];
 
-          const brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          if (config.is_invert) {
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+          }
 
-          const charIndex = Math.floor((brightness / 255) * asciiLen);
+          const lum = config.is_grayscale
+            ? 0.299 * r + 0.587 * g + 0.114 * b
+            : 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+          const charIndex = Math.floor((lum / 255) * asciiLen);
 
           canvasCtx.fillText(
             asciiChars.charAt(charIndex),
@@ -69,7 +86,7 @@ const Display = () => {
         }
       }
 
-      animationFrameId.current = requestAnimationFrame(() => draw(canvasCtx));
+      animationFrameId.current = requestAnimationFrame(draw);
     }
 
     const setupCanvas = () => {
@@ -81,12 +98,7 @@ const Display = () => {
       vdoRef.current.srcObject = stream;
       vdoRef.current.play();
 
-      const canvasCtx = canvasRef.current.getContext("2d", {
-        willReadFrequently: true,
-      });
-      if (!canvasCtx) return;
-
-      vdoRef.current.addEventListener("playing", () => draw(canvasCtx));
+      vdoRef.current.addEventListener("playing", draw);
 
       canvasRef.current.width = settings.width || canvasRef.current.width;
       canvasRef.current.height = settings.height || canvasRef.current.height;
@@ -100,8 +112,9 @@ const Display = () => {
         cancelAnimationFrame(animationFrameId.current);
 
       if (vdoRef.current) {
-        vdoRef.current?.pause();
+        vdoRef.current.pause();
         vdoRef.current.srcObject = null;
+        vdoRef.current.removeEventListener("playing", draw);
       }
     };
   }, [settings, config]);

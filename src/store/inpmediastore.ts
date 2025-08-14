@@ -4,6 +4,9 @@ interface AsciiConfig {
   background: string;
   foreground: string;
   size: number;
+  is_short: boolean;
+  is_grayscale: boolean;
+  is_invert: boolean;
 }
 
 interface MInpProps {
@@ -33,9 +36,12 @@ export const createMInpStore = (initProps?: Partial<MInpProps>) => {
     settings: undefined,
     stream: undefined,
     config: {
-      background: "#ffffff",
-      foreground: "#000000",
-      size: 4,
+      background: "#000000",
+      foreground: "#00ee00",
+      size: 8,
+      is_grayscale: false,
+      is_short: true,
+      is_invert: false,
     },
   };
 
